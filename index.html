@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kies je taal</title>
+  <style>
+    #logo {
+      position: absolute;
+      top: 50px;
+      right: 20px;
+      width: 220px;
+      height: auto;
+      z-index: 10;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding-top: 180px; /* 👈 zet alles verder naar beneden */
+      background-image: url("images/Achtergrond 2.webp");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 36px;
+      color: #e4a312;
+      margin-bottom: 40px;
+    }
+
+    .taalraster {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .taalkaart {
+      border: 2px solid #a17be6;
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      background-color: #fff;
+    }
+
+    .taalkaart:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .taalkaart img {
+      width: 48px;
+      height: auto;
+      display: block;
+      margin: 6px auto 0;
+    }
+
+    .taalkaart p {
+      margin: 0;
+      font-size: 16px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <img src="images/logo.png" alt="Logo" id="logo">
+
+  <h1>KIES JE TAAL</h1>
+
+  <div class="taalraster">
+    <!-- Ondersteunde talen -->
+    <div class="taalkaart" onclick="selectLanguage('nl')">
+      <p>Nederlands</p>
+      <img src="flags/nl.webp" alt="Nederlands">
+    </div>
+    <div class="taalkaart" onclick="selectLanguage('fr')">
+      <p>Français</p>
+      <img src="flags/fr.webp" alt="Frans">
+    </div>
+    <div class="taalkaart" onclick="selectLanguage('en')">
+      <p>English</p>
+      <img src="flags/gb.webp" alt="Engels">
+    </div>
+    <div class="taalkaart" onclick="selectLanguage('de')">
+      <p>Deutsch</p>
+      <img src="flags/de.webp" alt="Duits">
+    </div>
+
+    <!-- Andere talen → fallback naar Nederlands -->
+    <div class="taalkaart" onclick="fallbackLanguage('Español')">
+      <p>Español</p>
+      <img src="flags/es.webp" alt="Spaans">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('Italiano')">
+      <p>Italiano</p>
+      <img src="flags/it.webp" alt="Italiaans">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('Română')">
+      <p>Română</p>
+      <img src="flags/ro.webp" alt="Roemeens">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('العربية')">
+      <p>العربية</p>
+      <img src="flags/ma.webp" alt="Arabisch">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('Magyar')">
+      <p>Magyar</p>
+      <img src="flags/hu.webp" alt="Hongaars">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('Türkçe')">
+      <p>Türkçe</p>
+      <img src="flags/tr.webp" alt="Turks">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('українська')">
+      <p>українська</p>
+      <img src="flags/ua.webp" alt="Oekraïens">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('Polski')">
+      <p>Polski</p>
+      <img src="flags/pl.webp" alt="Pools">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('فارسی')">
+      <p>فارسی</p>
+      <img src="flags/sy.webp" alt="Perzisch">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('Português')">
+      <p>Português</p>
+      <img src="flags/pt.webp" alt="Portugees">
+    </div>
+    <div class="taalkaart" onclick="fallbackLanguage('čeština')">
+      <p>čeština</p>
+      <img src="flags/cz.webp" alt="Tsjechisch">
+    </div>
+  </div>
+
+  <script>
+    function selectLanguage(lang) {
+      localStorage.setItem("taal", lang);
+      window.location.href = "bibliotheek.html";
+    }
+
+    function fallbackLanguage(name) {
+      alert(`${name} is voorlopig nog niet beschikbaar. Je krijgt de Nederlandse versie.`);
+      selectLanguage('nl');
+    }
+  </script>
+</body>
+</html>
