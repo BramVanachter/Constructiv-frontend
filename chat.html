@@ -21,7 +21,6 @@
       z-index: 50;
       transition: transform 0.2s ease;
     }
-
     #terugIcoon:hover { transform: scale(1.1); }
 
     #logo {
@@ -82,14 +81,12 @@
       font-size: 15px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-
     .vraag {
       background-color: #5d0e46;
       color: #fff;
       float: right;
       border-top-right-radius: 4px;
     }
-
     .antwoord {
       background-color: #fff;
       border: 1px solid #5d0e46;
@@ -110,7 +107,6 @@
       width: 60px;
       height: 24px;
     }
-
     .typing::before, .typing::after, .typing span {
       content: '';
       display: block;
@@ -122,7 +118,6 @@
       top: 50%;
       transform: translateY(-50%);
     }
-
     .typing::before { left: 12px; animation: typingBlink 1.2s infinite; }
     .typing::after  { left: 32px; animation: typingBlink 1.2s infinite 0.3s; }
     .typing span    { left: 52px; animation: typingBlink 1.2s infinite 0.6s; }
@@ -141,7 +136,6 @@
       background-color: white;
       gap: 8px;
     }
-
     #inputRow textarea {
       flex: 1;
       font-size: 16px;
@@ -155,14 +149,12 @@
       line-height: 20px;
       overflow-y: auto;
     }
-
     #inputRow button {
       background: none;
       border: none;
       padding: 0;
       cursor: pointer;
     }
-
     #inputRow button img { width: 28px; height: auto; display: block; }
 
     /* Quiz Popup */
@@ -176,7 +168,6 @@
       align-items: center;
       z-index: 100;
     }
-
     #quizContent {
       background: #fff;
       border: 2px solid #5d0e46;
@@ -187,13 +178,11 @@
       text-align: center;
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-
     #quizContent h3 {
       font-size: 20px;
       margin-bottom: 20px;
       color: #5d0e46;
     }
-
     #quizContent button {
       background-color: #f4f1ff;
       border: 1px solid #a17be6;
@@ -206,9 +195,7 @@
       cursor: pointer;
       transition: background-color 0.2s ease;
     }
-
     #quizContent button:hover { background-color: #e6d8ff; }
-
     #quizContent .sluitenBtn {
       background-color: #fff;
       border: none;
@@ -225,8 +212,10 @@
 
   <h1>SAFETY: GOOD PRACTICES</h1>
 
+  <!-- ✅ Video met zowel webm als mp4 -->
   <video id="uitlegVideo" width="600" controls>
-    <source id="videoSource" src="" type="video/mp4">
+    <source id="videoSourceWebm" src="" type="video/webm">
+    <source id="videoSourceMp4" src="" type="video/mp4">
     Je browser ondersteunt geen video.
   </video>
 
@@ -243,22 +232,7 @@
   <script>
     const API_URL = "https://constructiv-veiligheid.onrender.com";
 
-    async function apiVraag(tekst) {
-      try {
-        const response = await fetch(`${API_URL}/vraag_met_metadata`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tekst })
-        });
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        return await response.json();
-      } catch (err) {
-        console.error("❌ API-fout:", err);
-        return { antwoord: "⚠️ Er ging iets mis bij het ophalen van het antwoord.", audio_base64: null };
-      }
-    }
-
-    // ✅ Video kiezen per taal
+    // ✅ Video selecteren per taal
     const taal = localStorage.getItem("taal") || "nl";
     let videoNaam = localStorage.getItem("video");
 
@@ -266,24 +240,21 @@
       alert("Geen video geselecteerd. Ga terug naar de bibliotheek.");
       window.location.href = "bibliotheek.html";
     } else {
-      const baseName = videoNaam.split(".")[0]; // bv "prefabtrap"
-      const ext = videoNaam.split(".")[1];      // bv "mp4"
+      const videoEl = document.getElementById("uitlegVideo");
+      const baseName = videoNaam.split(".")[0]; // bv "Prefabtrap"
 
-      // Beschikbare bestanden
-      const supportedVideos = [
-        "Prefabtrap_nl.webm", "Prefabtrap_fr.webm", "Prefabtrap_en.webm", "Prefabtrap_de.webm",
-        "HijsenVanLasten_nl.webm", "HijsenVanLasten_fr.webm", "HijsenVanLasten_en.webm", "HijsenVanLasten_de.webm"
-      ];
+      // Alleen deze hebben meertalige versies
+      const meertalig = ["Prefabtrap", "HijsenVanLasten"];
 
-      let vertaaldBestand = `${baseName}_${taal}.${ext}`;
-      if (supportedVideos.includes(vertaaldBestand)) {
-        videoNaam = vertaaldBestand;
+      if (meertalig.includes(baseName)) {
+        document.getElementById("videoSourceWebm").src = "videos/" + baseName + "_" + taal + ".webm";
+        document.getElementById("videoSourceMp4").src  = "videos/" + baseName + "_" + taal + ".mp4";
       } else {
-        videoNaam = `${baseName}_nl.${ext}`; // fallback naar NL
+        // fallback naar originele bestandsnaam
+        document.getElementById("videoSourceWebm").src = "videos/" + baseName + ".webm";
+        document.getElementById("videoSourceMp4").src  = "videos/" + videoNaam;
       }
-
-      document.getElementById("videoSource").src = "videos/" + videoNaam;
-      document.getElementById("uitlegVideo").load();
+      videoEl.load();
     }
 
     const uiVertalingen = {
@@ -300,12 +271,26 @@
             quizTitle: "Erinnerst du dich?", quizBtn: "🧠 Teste dich zu diesem Thema?",
             correct: "✅ Richtig!", wrong: "❌ Falsch!", close: "✖ Schließen" }
     };
-
     const uiText = uiVertalingen[taal] || uiVertalingen["nl"];
 
     document.getElementById("userInput").placeholder = uiText.placeholder;
     document.getElementById("sendButton").title = uiText.sendTitle;
     document.getElementById("micButton").title = uiText.micTitle;
+
+    async function apiVraag(tekst) {
+      try {
+        const response = await fetch(`${API_URL}/vraag_met_metadata`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tekst })
+        });
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        return await response.json();
+      } catch (err) {
+        console.error("❌ API-fout:", err);
+        return { antwoord: "⚠️ Er ging iets mis bij het ophalen van het antwoord.", audio_base64: null };
+      }
+    }
 
     async function stelVraag(vraag = null) {
       const vraagInput = document.getElementById("userInput");
