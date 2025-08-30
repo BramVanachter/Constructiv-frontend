@@ -258,11 +258,30 @@
       }
     }
 
-    const videoNaam = localStorage.getItem("video");
+    // ✅ Video kiezen per taal
+    const taal = localStorage.getItem("taal") || "nl";
+    let videoNaam = localStorage.getItem("video");
+
     if (!videoNaam) {
       alert("Geen video geselecteerd. Ga terug naar de bibliotheek.");
       window.location.href = "bibliotheek.html";
     } else {
+      const baseName = videoNaam.split(".")[0]; // bv "prefabtrap"
+      const ext = videoNaam.split(".")[1];      // bv "mp4"
+
+      // Beschikbare bestanden
+      const supportedVideos = [
+        "prefabtrap_nl.mp4", "prefabtrap_fr.mp4", "prefabtrap_en.mp4", "prefabtrap_de.mp4",
+        "lasten_nl.mp4", "lasten_fr.mp4", "lasten_en.mp4", "lasten_de.mp4"
+      ];
+
+      let vertaaldBestand = `${baseName}_${taal}.${ext}`;
+      if (supportedVideos.includes(vertaaldBestand)) {
+        videoNaam = vertaaldBestand;
+      } else {
+        videoNaam = `${baseName}_nl.${ext}`; // fallback naar NL
+      }
+
       document.getElementById("videoSource").src = "videos/" + videoNaam;
       document.getElementById("uitlegVideo").load();
     }
@@ -282,7 +301,6 @@
             correct: "✅ Richtig!", wrong: "❌ Falsch!", close: "✖ Schließen" }
     };
 
-    const taal = localStorage.getItem("taal") || "nl";
     const uiText = uiVertalingen[taal] || uiVertalingen["nl"];
 
     document.getElementById("userInput").placeholder = uiText.placeholder;
@@ -320,14 +338,14 @@
       video.play();
       setTimeout(() => video.muted = false, data.antwoord.split(" ").length * 500);
 
-if (data.quiz) {
-  const quizBtn = document.createElement("button");
-  quizBtn.textContent = uiText.quizBtn;
-  quizBtn.className = "quizBtn chatbubble antwoord"; // ✅ ziet eruit als bubble
-  quizBtn.onclick = () => toonQuiz(data.quiz);
-  chat.appendChild(quizBtn);
-  chat.scrollTop = chat.scrollHeight;
-}
+      if (data.quiz) {
+        const quizBtn = document.createElement("button");
+        quizBtn.textContent = uiText.quizBtn;
+        quizBtn.className = "quizBtn chatbubble antwoord";
+        quizBtn.onclick = () => toonQuiz(data.quiz);
+        chat.appendChild(quizBtn);
+        chat.scrollTop = chat.scrollHeight;
+      }
     }
 
     function toonQuiz(quiz) {
