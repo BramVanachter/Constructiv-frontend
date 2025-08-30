@@ -57,6 +57,22 @@
       width: 100%;
     }
 
+    /* 🔊 Overlay knop om geluid aan te zetten */
+    #unmuteOverlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      display: none;
+      z-index: 100;
+    }
+
     #chat {
       flex: 1;
       min-height: 200px;
@@ -212,12 +228,15 @@
 
   <h1>SAFETY: GOOD PRACTICES</h1>
 
-  <!-- ✅ Video met zowel webm als mp4 -->
-  <video id="uitlegVideo" width="600" controls>
-    <source id="videoSourceWebm" src="" type="video/webm">
-    <source id="videoSourceMp4" src="" type="video/mp4">
-    Je browser ondersteunt geen video.
-  </video>
+  <!-- ✅ Video -->
+  <div style="position: relative; max-width: 800px; margin: auto;">
+    <video id="uitlegVideo" width="600" controls muted>
+      <source id="videoSourceWebm" src="" type="video/webm">
+      <source id="videoSourceMp4" src="" type="video/mp4">
+      Je browser ondersteunt geen video.
+    </video>
+    <div id="unmuteOverlay">🔊 Klik om geluid aan te zetten</div>
+  </div>
 
   <div id="chat"></div>
 
@@ -232,7 +251,6 @@
   <script>
     const API_URL = "https://constructiv-veiligheid.onrender.com";
 
-    // ✅ Video selecteren per taal
     const taal = localStorage.getItem("taal") || "nl";
     let videoNaam = localStorage.getItem("video");
 
@@ -241,21 +259,30 @@
       window.location.href = "bibliotheek.html";
     } else {
       const videoEl = document.getElementById("uitlegVideo");
-      const baseName = videoNaam.split(".")[0]; // bv "Prefabtrap"
+      const baseName = videoNaam.split(".")[0];
 
-      // Alleen deze hebben meertalige versies
       const meertalig = ["Prefabtrap", "HijsenVanLasten"];
 
       if (meertalig.includes(baseName)) {
         document.getElementById("videoSourceWebm").src = "videos/" + baseName + "_" + taal + ".webm";
         document.getElementById("videoSourceMp4").src  = "videos/" + baseName + "_" + taal + ".mp4";
       } else {
-        // fallback naar originele bestandsnaam
         document.getElementById("videoSourceWebm").src = "videos/" + baseName + ".webm";
         document.getElementById("videoSourceMp4").src  = "videos/" + videoNaam;
       }
       videoEl.load();
     }
+
+    // 🔊 Overlay voor unmute
+    const overlay = document.getElementById("unmuteOverlay");
+    const uitlegVideo = document.getElementById("uitlegVideo");
+    overlay.style.display = "block";
+
+    overlay.addEventListener("click", () => {
+      uitlegVideo.muted = false;
+      overlay.style.display = "none";
+      uitlegVideo.play();
+    });
 
     const uiVertalingen = {
       nl: { placeholder: "Typ je vraag hier...", sendTitle: "Versturen", micTitle: "Spreken",
@@ -312,21 +339,13 @@
       typingDiv.innerHTML = data.antwoord;
       chat.scrollTop = chat.scrollHeight;
 
-      const video = document.getElementById("uitlegVideo");
-      video.currentTime = data.start_time || 0;
-
       if (data.audio_base64) {
-        // mute video tijdens TTS
-        video.muted = true;
         const audio = new Audio("data:audio/mpeg;base64," + data.audio_base64);
         audio.play();
-        audio.onended = () => {
-          video.muted = false; // zet geluid terug aan
-        };
-      } else {
-        video.muted = false; // geen TTS → altijd geluid aan
       }
 
+      const video = document.getElementById("uitlegVideo");
+      video.currentTime = data.start_time || 0;
       video.play();
 
       if (data.quiz) {
