@@ -317,11 +317,9 @@
         audio.play();
       }
 
-      const video = document.getElementById("uitlegVideo");
-      video.muted = true;
-      video.currentTime = data.start_time || 0;
-      video.play();
-      setTimeout(() => video.muted = false, data.antwoord.split(" ").length * 500);
+const video = document.getElementById("uitlegVideo");
+video.currentTime = data.start_time || 0;
+video.play();
 
       if (data.quiz) {
         const quizBtn = document.createElement("button");
