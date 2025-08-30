@@ -101,35 +101,35 @@
       "de": { titel: "Wähle ein Video", geen: "Keine Videos für diese Sprache verfügbar." }
     };
 
-    // 🎥 Lijst van video's per taal
+    // 🎥 Lijst van video's (alleen basenaam!)
     const videoOpties = {
       "nl": [
-        { naam: "Hijsen van Prefabtrap", bestand: "Prefabtrap.mp4", thumbnail: "thumbnails/prefabtrap.jpg" },
-        { naam: "Hijsen van lasten", bestand: "HijsenVanLasten.mp4", thumbnail: "thumbnails/hijsenvanlasten.jpg" },
-        { naam: "Binnenslijpwerk", bestand: "Binnenslijpwerk.mp4", thumbnail: "thumbnails/binnenslijpwerk.jpg" },
-        { naam: "Buitenslijpwerk", bestand: "Buitenslijpwerk.mp4", thumbnail: "thumbnails/buitenslijpwerk.jpg" },
-        { naam: "Dakdichting", bestand: "Dakdichting.mp4", thumbnail: "thumbnails/dakdichting.jpg" }
+        { naam: "Hijsen van Prefabtrap", bestand: "Prefabtrap", thumbnail: "thumbnails/prefabtrap.jpg" },
+        { naam: "Hijsen van lasten", bestand: "HijsenVanLasten", thumbnail: "thumbnails/hijsenvanlasten.jpg" },
+        { naam: "Binnenslijpwerk", bestand: "Binnenslijpwerk", thumbnail: "thumbnails/binnenslijpwerk.jpg" },
+        { naam: "Buitenslijpwerk", bestand: "Buitenslijpwerk", thumbnail: "thumbnails/buitenslijpwerk.jpg" },
+        { naam: "Dakdichting", bestand: "Dakdichting", thumbnail: "thumbnails/dakdichting.jpg" }
       ],
       "fr": [
-        { naam: "Levage d’escalier préfabriqué", bestand: "Prefabtrap.mp4", thumbnail: "thumbnails/prefabtrap.jpg" },
-        { naam: "Levage sécurisé", bestand: "HijsenVanLasten.mp4", thumbnail: "thumbnails/hijsenvanlasten.jpg" },
-        { naam: "Travail de meulage intérieur", bestand: "Binnenslijpwerk.mp4", thumbnail: "thumbnails/binnenslijpwerk.jpg" },
-        { naam: "Travail de meulage extérieur", bestand: "Buitenslijpwerk.mp4", thumbnail: "thumbnails/buitenslijpwerk.jpg" },
-        { naam: "Étanchéité de toiture", bestand: "Dakdichting.mp4", thumbnail: "thumbnails/dakdichting.jpg" }
+        { naam: "Levage d’escalier préfabriqué", bestand: "Prefabtrap", thumbnail: "thumbnails/prefabtrap.jpg" },
+        { naam: "Levage sécurisé", bestand: "HijsenVanLasten", thumbnail: "thumbnails/hijsenvanlasten.jpg" },
+        { naam: "Travail de meulage intérieur", bestand: "Binnenslijpwerk", thumbnail: "thumbnails/binnenslijpwerk.jpg" },
+        { naam: "Travail de meulage extérieur", bestand: "Buitenslijpwerk", thumbnail: "thumbnails/buitenslijpwerk.jpg" },
+        { naam: "Étanchéité de toiture", bestand: "Dakdichting", thumbnail: "thumbnails/dakdichting.jpg" }
       ],
       "en": [
-        { naam: "Lifting Prefabricated Stairs", bestand: "Prefabtrap.mp4", thumbnail: "thumbnails/prefabtrap.jpg" },
-        { naam: "Safe Lifting", bestand: "HijsenVanLasten.mp4", thumbnail: "thumbnails/hijsenvanlasten.jpg" },
-        { naam: "Interior Grinding", bestand: "Binnenslijpwerk.mp4", thumbnail: "thumbnails/binnenslijpwerk.jpg" },
-        { naam: "Exterior Grinding", bestand: "Buitenslijpwerk.mp4", thumbnail: "thumbnails/buitenslijpwerk.jpg" },
-        { naam: "Roof Sealing", bestand: "Dakdichting.mp4", thumbnail: "thumbnails/dakdichting.jpg" }
+        { naam: "Lifting Prefabricated Stairs", bestand: "Prefabtrap", thumbnail: "thumbnails/prefabtrap.jpg" },
+        { naam: "Safe Lifting", bestand: "HijsenVanLasten", thumbnail: "thumbnails/hijsenvanlasten.jpg" },
+        { naam: "Interior Grinding", bestand: "Binnenslijpwerk", thumbnail: "thumbnails/binnenslijpwerk.jpg" },
+        { naam: "Exterior Grinding", bestand: "Buitenslijpwerk", thumbnail: "thumbnails/buitenslijpwerk.jpg" },
+        { naam: "Roof Sealing", bestand: "Dakdichting", thumbnail: "thumbnails/dakdichting.jpg" }
       ],
       "de": [
-        { naam: "Heben von Fertigtreppen", bestand: "Prefabtrap.mp4", thumbnail: "thumbnails/prefabtrap.jpg" },
-        { naam: "Sicheres Heben", bestand: "HijsenVanLasten.mp4", thumbnail: "thumbnails/hijsenvanlasten.jpg" },
-        { naam: "Innenschleifarbeiten", bestand: "Binnenslijpwerk.mp4", thumbnail: "thumbnails/binnenslijpwerk.jpg" },
-        { naam: "Außenschleifarbeiten", bestand: "Buitenslijpwerk.mp4", thumbnail: "thumbnails/buitenslijpwerk.jpg" },
-        { naam: "Dachabdichtung", bestand: "Dakdichting.mp4", thumbnail: "thumbnails/dakdichting.jpg" }
+        { naam: "Heben von Fertigtreppen", bestand: "Prefabtrap", thumbnail: "thumbnails/prefabtrap.jpg" },
+        { naam: "Sicheres Heben", bestand: "HijsenVanLasten", thumbnail: "thumbnails/hijsenvanlasten.jpg" },
+        { naam: "Innenschleifarbeiten", bestand: "Binnenslijpwerk", thumbnail: "thumbnails/binnenslijpwerk.jpg" },
+        { naam: "Außenschleifarbeiten", bestand: "Buitenslijpwerk", thumbnail: "thumbnails/buitenslijpwerk.jpg" },
+        { naam: "Dachabdichtung", bestand: "Dakdichting", thumbnail: "thumbnails/dakdichting.jpg" }
       ]
     };
 
@@ -157,6 +157,7 @@
 
     // 🎬 Video selecteren
     function selecteerVideo(bestand) {
+      // alleen de basisnaam opslaan
       localStorage.setItem("video", bestand);
       window.location.href = "chat.html";
     }
