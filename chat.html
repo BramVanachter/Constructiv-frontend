@@ -57,22 +57,6 @@
       width: 100%;
     }
 
-    /* 🔊 Overlay knop om geluid aan te zetten */
-    #unmuteOverlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 18px;
-      display: none;
-      z-index: 100;
-    }
-
     #chat {
       flex: 1;
       min-height: 200px;
@@ -111,7 +95,6 @@
       border-top-left-radius: 4px;
     }
 
-    /* Typing animation */
     .typing {
       background-color: #fff;
       border: 1px solid #5d0e46;
@@ -223,20 +206,14 @@
   </style>
 </head>
 <body>
+  <!-- let op: pad is 'Icons/back.png' (hoofdletter I) zoals in je repo -->
   <img src="Icons/back.png" id="terugIcoon" onclick="gaTerug()" alt="Terug" />
   <img src="images/logo.png" alt="Logo" id="logo" />
 
   <h1>SAFETY: GOOD PRACTICES</h1>
 
-  <!-- ✅ Video -->
-  <div style="position: relative; max-width: 800px; margin: auto;">
-    <video id="uitlegVideo" width="600" controls muted>
-      <source id="videoSourceWebm" src="" type="video/webm">
-      <source id="videoSourceMp4" src="" type="video/mp4">
-      Je browser ondersteunt geen video.
-    </video>
-    <div id="unmuteOverlay">🔊 Klik om geluid aan te zetten</div>
-  </div>
+  <!-- Alleen MP4, geen overlay/unmute -->
+  <video id="uitlegVideo" width="600" controls playsinline preload="metadata"></video>
 
   <div id="chat"></div>
 
@@ -251,39 +228,55 @@
   <script>
     const API_URL = "https://constructiv-veiligheid.onrender.com";
 
+    // ============== VIDEO LADEN (MP4-only, met fallback) ==============
     const taal = localStorage.getItem("taal") || "nl";
-    let videoNaam = localStorage.getItem("video");
+    const base = localStorage.getItem("video"); // bv "Prefabtrap"
+    const video = document.getElementById("uitlegVideo");
 
-    if (!videoNaam) {
+    if (!base) {
       alert("Geen video geselecteerd. Ga terug naar de bibliotheek.");
       window.location.href = "bibliotheek.html";
-    } else {
-      const videoEl = document.getElementById("uitlegVideo");
-      const baseName = videoNaam.split(".")[0];
-
-      const meertalig = ["Prefabtrap", "HijsenVanLasten"];
-
-      if (meertalig.includes(baseName)) {
-        document.getElementById("videoSourceWebm").src = "videos/" + baseName + "_" + taal + ".webm";
-        document.getElementById("videoSourceMp4").src  = "videos/" + baseName + "_" + taal + ".mp4";
-      } else {
-        document.getElementById("videoSourceWebm").src = "videos/" + baseName + ".webm";
-        document.getElementById("videoSourceMp4").src  = "videos/" + videoNaam;
-      }
-      videoEl.load();
     }
 
-    // 🔊 Overlay voor unmute
-    const overlay = document.getElementById("unmuteOverlay");
-    const uitlegVideo = document.getElementById("uitlegVideo");
-    overlay.style.display = "block";
+    // Alleen deze hebben taalversies:
+    const meertalig = ["Prefabtrap", "HijsenVanLasten"];
 
-    overlay.addEventListener("click", () => {
-      uitlegVideo.muted = false;
-      overlay.style.display = "none";
-      uitlegVideo.play();
-    });
+    // 1) Probeer taalvariant
+    const langMp4 = meertalig.includes(base) ? `videos/${base}_${taal}.mp4` : `videos/${base}.mp4`;
+    // 2) Fallback NL (alleen zinvol bij meertalig)
+    const nlMp4   = meertalig.includes(base) ? `videos/${base}_nl.mp4`       : `videos/${base}.mp4`;
+    // 3) Fallback generiek zonder suffix
+    const baseMp4 = `videos/${base}.mp4`;
 
+    let tried = 0;
+    function tryNext() {
+      tried++;
+      if (tried === 1) {
+        video.src = langMp4;
+      } else if (tried === 2) {
+        if (langMp4 !== nlMp4) {
+          video.src = nlMp4;
+        } else {
+          return tryNext();
+        }
+      } else if (tried === 3) {
+        if (nlMp4 !== baseMp4) {
+          video.src = baseMp4;
+        } else {
+          console.error("Geen bruikbare MP4 gevonden.");
+          return;
+        }
+      } else {
+        console.error("Alle MP4 fallbacks geprobeerd zonder succes.");
+        return;
+      }
+      video.load();
+    }
+
+    video.addEventListener("error", tryNext);
+    tryNext(); // start laden
+
+    // ============== UI/Taalstrings ==============
     const uiVertalingen = {
       nl: { placeholder: "Typ je vraag hier...", sendTitle: "Versturen", micTitle: "Spreken",
             quizTitle: "Weet je dit nog?", quizBtn: "🧠 Test jezelf over dit onderwerp?",
@@ -299,11 +292,11 @@
             correct: "✅ Richtig!", wrong: "❌ Falsch!", close: "✖ Schließen" }
     };
     const uiText = uiVertalingen[taal] || uiVertalingen["nl"];
-
     document.getElementById("userInput").placeholder = uiText.placeholder;
     document.getElementById("sendButton").title = uiText.sendTitle;
     document.getElementById("micButton").title = uiText.micTitle;
 
+    // ============== API HELPER ==============
     async function apiVraag(tekst) {
       try {
         const response = await fetch(`${API_URL}/vraag_met_metadata`, {
@@ -319,6 +312,7 @@
       }
     }
 
+    // ============== CHAT LOGICA ==============
     async function stelVraag(vraag = null) {
       const vraagInput = document.getElementById("userInput");
       const echteVraag = vraag || vraagInput.value.trim();
@@ -339,15 +333,19 @@
       typingDiv.innerHTML = data.antwoord;
       chat.scrollTop = chat.scrollHeight;
 
+      // Als er TTS is teruggekomen
       if (data.audio_base64) {
         const audio = new Audio("data:audio/mpeg;base64," + data.audio_base64);
-        audio.play();
+        audio.play().catch(()=>{});
       }
 
-      const video = document.getElementById("uitlegVideo");
-      video.currentTime = data.start_time || 0;
-      video.play();
+      // Video afspelen vanaf voorgestelde tijd (geen mute/unmute meer)
+      if (!isNaN(data.start_time)) {
+        video.currentTime = data.start_time;
+      }
+      video.play().catch(()=>{});
 
+      // Quiz-knop
       if (data.quiz) {
         const quizBtn = document.createElement("button");
         quizBtn.textContent = uiText.quizBtn;
@@ -381,6 +379,7 @@
 
     function sluitQuiz() { document.getElementById("quizModal").style.display = "none"; }
 
+    // ============== Spraakherkenning ==============
     function startListening() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return alert("❌ Geen spraakherkenning beschikbaar.");
