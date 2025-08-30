@@ -212,8 +212,8 @@
 
   <h1>SAFETY: GOOD PRACTICES</h1>
 
-  <!-- ✅ Video met zowel webm als mp4 -->
-  <video id="uitlegVideo" width="600" controls>
+  <!-- ✅ Video start muted, wordt pas na eerste klik unmuted -->
+  <video id="uitlegVideo" width="600" controls autoplay playsinline muted>
     <source id="videoSourceWebm" src="" type="video/webm">
     <source id="videoSourceMp4" src="" type="video/mp4">
     Je browser ondersteunt geen video.
@@ -250,12 +250,17 @@
         document.getElementById("videoSourceWebm").src = "videos/" + baseName + "_" + taal + ".webm";
         document.getElementById("videoSourceMp4").src  = "videos/" + baseName + "_" + taal + ".mp4";
       } else {
-        // fallback naar originele bestandsnaam
         document.getElementById("videoSourceWebm").src = "videos/" + baseName + ".webm";
         document.getElementById("videoSourceMp4").src  = "videos/" + videoNaam;
       }
       videoEl.load();
     }
+
+    // ✅ Na eerste klik ergens → video geluid aan
+    document.body.addEventListener("click", () => {
+      const video = document.getElementById("uitlegVideo");
+      video.muted = false;
+    }, { once: true });
 
     const uiVertalingen = {
       nl: { placeholder: "Typ je vraag hier...", sendTitle: "Versturen", micTitle: "Spreken",
@@ -317,9 +322,9 @@
         audio.play();
       }
 
-const video = document.getElementById("uitlegVideo");
-video.currentTime = data.start_time || 0;
-video.play();
+      const video = document.getElementById("uitlegVideo");
+      video.currentTime = data.start_time || 0;
+      video.play();
 
       if (data.quiz) {
         const quizBtn = document.createElement("button");
