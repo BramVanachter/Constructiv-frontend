@@ -9,6 +9,7 @@
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
+      overflow: hidden; /* voorkomt dubbele scrollbars */
     }
 
     #terugIcoon {
@@ -48,25 +49,26 @@
     h1 {
       text-align: center;
       color: #e4a312;
-      font-size: 48px;
+      font-size: 36px;
+      margin-bottom: 10px;
     }
 
     #uitlegVideo {
       display: block;
-      margin: 0 auto 20px;
+      margin: 0 auto 10px;
       width: 100%;
     }
 
     #chat {
       flex: 1;
       min-height: 200px;
-      max-height: 60vh;
+      max-height: calc(100vh - 220px); /* hoogte scherm - header - input */
       overflow-y: auto;
       border: 2px solid #5d0e46;
       background-color: #ffffff;
       border-radius: 12px;
       padding: 15px;
-      margin-bottom: 20px;
+      margin-bottom: 100px; /* ruimte voor inputbalk */
     }
 
     .chatbubble {
@@ -95,6 +97,7 @@
       border-top-left-radius: 4px;
     }
 
+    /* Typing animation */
     .typing {
       background-color: #fff;
       border: 1px solid #5d0e46;
@@ -126,7 +129,15 @@
       40% { opacity: 1; }
     }
 
+    /* ✅ inputbalk vast onderaan */
     #inputRow {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 40px);
+      max-width: 800px;
+
       display: flex;
       align-items: flex-end;
       border: 2px solid #5d0e46;
@@ -134,6 +145,7 @@
       padding: 8px;
       background-color: white;
       gap: 8px;
+      z-index: 200;
     }
     #inputRow textarea {
       flex: 1;
@@ -156,6 +168,7 @@
     }
     #inputRow button img { width: 28px; height: auto; display: block; }
 
+    /* Quiz Popup */
     #quizModal {
       position: fixed;
       top: 0; left: 0;
@@ -210,7 +223,10 @@
 
   <h1>SAFETY: GOOD PRACTICES</h1>
 
-  <video id="uitlegVideo" width="600" controls playsinline preload="metadata"></video>
+  <video id="uitlegVideo" width="600" controls>
+    <source id="videoSource" src="" type="video/mp4">
+    Je browser ondersteunt geen video.
+  </video>
 
   <div id="chat"></div>
 
@@ -225,31 +241,32 @@
   <script>
     const API_URL = "https://constructiv-veiligheid.onrender.com";
 
-    const taal = localStorage.getItem("taal") || "nl";
-    const base = localStorage.getItem("video");
-    const video = document.getElementById("uitlegVideo");
+    async function apiVraag(tekst) {
+      try {
+        const response = await fetch(`${API_URL}/vraag_met_metadata`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tekst })
+        });
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        return await response.json();
+      } catch (err) {
+        console.error("❌ API-fout:", err);
+        return { antwoord: "⚠️ Er ging iets mis bij het ophalen van het antwoord.", audio_base64: null };
+      }
+    }
 
-    if (!base) {
+    // ✅ Video selecteren per taal
+    const taal = localStorage.getItem("taal") || "nl";
+    let videoNaam = localStorage.getItem("video");
+
+    if (!videoNaam) {
       alert("Geen video geselecteerd. Ga terug naar de bibliotheek.");
       window.location.href = "bibliotheek.html";
+    } else {
+      document.getElementById("videoSource").src = "videos/" + videoNaam + "_" + taal + ".mp4";
+      document.getElementById("uitlegVideo").load();
     }
-
-    const meertalig = ["Prefabtrap", "HijsenVanWelfsels"];
-    const langMp4 = meertalig.includes(base) ? `videos/${base}_${taal}.mp4` : `videos/${base}.mp4`;
-    const nlMp4   = meertalig.includes(base) ? `videos/${base}_nl.mp4` : `videos/${base}.mp4`;
-    const baseMp4 = `videos/${base}.mp4`;
-
-    let tried = 0;
-    function tryNext() {
-      tried++;
-      if (tried === 1) video.src = langMp4;
-      else if (tried === 2 && langMp4 !== nlMp4) video.src = nlMp4;
-      else if (tried === 3 && nlMp4 !== baseMp4) video.src = baseMp4;
-      else return;
-      video.load();
-    }
-    video.addEventListener("error", tryNext);
-    tryNext();
 
     const uiVertalingen = {
       nl: { placeholder: "Typ je vraag hier...", sendTitle: "Versturen", micTitle: "Spreken",
@@ -266,24 +283,10 @@
             correct: "✅ Richtig!", wrong: "❌ Falsch!", close: "✖ Schließen" }
     };
     const uiText = uiVertalingen[taal] || uiVertalingen["nl"];
+
     document.getElementById("userInput").placeholder = uiText.placeholder;
     document.getElementById("sendButton").title = uiText.sendTitle;
     document.getElementById("micButton").title = uiText.micTitle;
-
-    async function apiVraag(tekst) {
-      try {
-        const response = await fetch(`${API_URL}/vraag_met_metadata`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tekst })
-        });
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        return await response.json();
-      } catch (err) {
-        console.error("❌ API-fout:", err);
-        return { antwoord: "⚠️ Er ging iets mis bij het ophalen van het antwoord.", audio_base64: null };
-      }
-    }
 
     async function stelVraag(vraag = null) {
       const vraagInput = document.getElementById("userInput");
@@ -301,18 +304,20 @@
       chat.scrollTop = chat.scrollHeight;
 
       const data = await apiVraag(echteVraag);
+
       typingDiv.innerHTML = data.antwoord;
       chat.scrollTop = chat.scrollHeight;
 
       if (data.audio_base64) {
         const audio = new Audio("data:audio/mpeg;base64," + data.audio_base64);
-        audio.play().catch(()=>{});
+        audio.play();
       }
 
-      // ❌ Geen video autoplay meer na antwoord
-      // if (!isNaN(data.start_time)) {
+      // ⚠️ Video speelt niet meer automatisch af bij antwoorden
+      // if (data.start_time !== undefined) {
+      //   const video = document.getElementById("uitlegVideo");
       //   video.currentTime = data.start_time;
-      //   video.play().catch(()=>{});
+      //   video.play();
       // }
 
       if (data.quiz) {
@@ -345,6 +350,7 @@
       if (gekozen === juist) { btn.style.backgroundColor = "#c8f7c5"; btn.innerText += " " + uiText.correct; }
       else { btn.style.backgroundColor = "#f7c5c5"; btn.innerText += " " + uiText.wrong; }
     }
+
     function sluitQuiz() { document.getElementById("quizModal").style.display = "none"; }
 
     function startListening() {
