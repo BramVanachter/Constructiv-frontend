@@ -156,7 +156,6 @@
     }
     #inputRow button img { width: 28px; height: auto; display: block; }
 
-    /* Quiz Popup */
     #quizModal {
       position: fixed;
       top: 0; left: 0;
@@ -206,13 +205,11 @@
   </style>
 </head>
 <body>
-  <!-- let op: pad is 'Icons/back.png' (hoofdletter I) zoals in je repo -->
   <img src="Icons/back.png" id="terugIcoon" onclick="gaTerug()" alt="Terug" />
   <img src="images/logo.png" alt="Logo" id="logo" />
 
   <h1>SAFETY: GOOD PRACTICES</h1>
 
-  <!-- Alleen MP4, geen overlay/unmute -->
   <video id="uitlegVideo" width="600" controls playsinline preload="metadata"></video>
 
   <div id="chat"></div>
@@ -228,9 +225,8 @@
   <script>
     const API_URL = "https://constructiv-veiligheid.onrender.com";
 
-    // ============== VIDEO LADEN (MP4-only, met fallback) ==============
     const taal = localStorage.getItem("taal") || "nl";
-    const base = localStorage.getItem("video"); // bv "Prefabtrap"
+    const base = localStorage.getItem("video");
     const video = document.getElementById("uitlegVideo");
 
     if (!base) {
@@ -238,45 +234,23 @@
       window.location.href = "bibliotheek.html";
     }
 
-    // Alleen deze hebben taalversies:
-    const meertalig = ["Prefabtrap", "HijsenVanLasten"];
-
-    // 1) Probeer taalvariant
+    const meertalig = ["Prefabtrap", "HijsenVanWelfsels"];
     const langMp4 = meertalig.includes(base) ? `videos/${base}_${taal}.mp4` : `videos/${base}.mp4`;
-    // 2) Fallback NL (alleen zinvol bij meertalig)
-    const nlMp4   = meertalig.includes(base) ? `videos/${base}_nl.mp4`       : `videos/${base}.mp4`;
-    // 3) Fallback generiek zonder suffix
+    const nlMp4   = meertalig.includes(base) ? `videos/${base}_nl.mp4` : `videos/${base}.mp4`;
     const baseMp4 = `videos/${base}.mp4`;
 
     let tried = 0;
     function tryNext() {
       tried++;
-      if (tried === 1) {
-        video.src = langMp4;
-      } else if (tried === 2) {
-        if (langMp4 !== nlMp4) {
-          video.src = nlMp4;
-        } else {
-          return tryNext();
-        }
-      } else if (tried === 3) {
-        if (nlMp4 !== baseMp4) {
-          video.src = baseMp4;
-        } else {
-          console.error("Geen bruikbare MP4 gevonden.");
-          return;
-        }
-      } else {
-        console.error("Alle MP4 fallbacks geprobeerd zonder succes.");
-        return;
-      }
+      if (tried === 1) video.src = langMp4;
+      else if (tried === 2 && langMp4 !== nlMp4) video.src = nlMp4;
+      else if (tried === 3 && nlMp4 !== baseMp4) video.src = baseMp4;
+      else return;
       video.load();
     }
-
     video.addEventListener("error", tryNext);
-    tryNext(); // start laden
+    tryNext();
 
-    // ============== UI/Taalstrings ==============
     const uiVertalingen = {
       nl: { placeholder: "Typ je vraag hier...", sendTitle: "Versturen", micTitle: "Spreken",
             quizTitle: "Weet je dit nog?", quizBtn: "🧠 Test jezelf over dit onderwerp?",
@@ -296,7 +270,6 @@
     document.getElementById("sendButton").title = uiText.sendTitle;
     document.getElementById("micButton").title = uiText.micTitle;
 
-    // ============== API HELPER ==============
     async function apiVraag(tekst) {
       try {
         const response = await fetch(`${API_URL}/vraag_met_metadata`, {
@@ -312,7 +285,6 @@
       }
     }
 
-    // ============== CHAT LOGICA ==============
     async function stelVraag(vraag = null) {
       const vraagInput = document.getElementById("userInput");
       const echteVraag = vraag || vraagInput.value.trim();
@@ -329,23 +301,20 @@
       chat.scrollTop = chat.scrollHeight;
 
       const data = await apiVraag(echteVraag);
-
       typingDiv.innerHTML = data.antwoord;
       chat.scrollTop = chat.scrollHeight;
 
-      // Als er TTS is teruggekomen
       if (data.audio_base64) {
         const audio = new Audio("data:audio/mpeg;base64," + data.audio_base64);
         audio.play().catch(()=>{});
       }
 
-      // Video afspelen vanaf voorgestelde tijd (geen mute/unmute meer)
-      if (!isNaN(data.start_time)) {
-        video.currentTime = data.start_time;
-      }
-      video.play().catch(()=>{});
+      // ❌ Geen video autoplay meer na antwoord
+      // if (!isNaN(data.start_time)) {
+      //   video.currentTime = data.start_time;
+      //   video.play().catch(()=>{});
+      // }
 
-      // Quiz-knop
       if (data.quiz) {
         const quizBtn = document.createElement("button");
         quizBtn.textContent = uiText.quizBtn;
@@ -376,10 +345,8 @@
       if (gekozen === juist) { btn.style.backgroundColor = "#c8f7c5"; btn.innerText += " " + uiText.correct; }
       else { btn.style.backgroundColor = "#f7c5c5"; btn.innerText += " " + uiText.wrong; }
     }
-
     function sluitQuiz() { document.getElementById("quizModal").style.display = "none"; }
 
-    // ============== Spraakherkenning ==============
     function startListening() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return alert("❌ Geen spraakherkenning beschikbaar.");
