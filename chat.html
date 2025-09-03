@@ -89,7 +89,38 @@
       border-top-left-radius: 4px;
     }
 
-    /* ✅ inputbalk vast onderaan, maar binnen layout */
+    /* ✅ Typing animation terug */
+    .typing {
+      background-color: #fff;
+      border: 1px solid #5d0e46;
+      border-radius: 12px;
+      padding: 6px 12px;
+      margin: 10px 0;
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 24px;
+    }
+    .typing::before, .typing::after, .typing span {
+      content: '';
+      display: block;
+      width: 8px;
+      height: 8px;
+      background: #5d0e46;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .typing::before { left: 12px; animation: typingBlink 1.2s infinite; }
+    .typing::after  { left: 32px; animation: typingBlink 1.2s infinite 0.3s; }
+    .typing span    { left: 52px; animation: typingBlink 1.2s infinite 0.6s; }
+
+    @keyframes typingBlink {
+      0%, 80%, 100% { opacity: 0.2; }
+      40% { opacity: 1; }
+    }
+
     #inputRow {
       display: flex;
       align-items: flex-end;
@@ -197,7 +228,6 @@
   <script>
     const API_URL = "https://constructiv-veiligheid.onrender.com";
 
-    // ✅ Video selecteren per taal
     const taal = localStorage.getItem("taal") || "nl";
     let videoNaam = localStorage.getItem("video");
 
@@ -233,7 +263,7 @@
     document.getElementById("sendButton").title = uiText.sendTitle;
     document.getElementById("micButton").title = uiText.micTitle;
 
-    // ✅ Startbericht bij laden
+    // Welkomstbericht
     window.addEventListener("DOMContentLoaded", () => {
       const chat = document.getElementById("chat");
       const startMsg = document.createElement("div");
@@ -266,6 +296,7 @@
       chat.innerHTML += `<div class="chatbubble vraag">${echteVraag}</div>`;
       vraagInput.value = "";
 
+      // ✅ Typing animatie laten zien
       const typingDiv = document.createElement("div");
       typingDiv.className = "chatbubble antwoord";
       typingDiv.innerHTML = `<div class="typing"><span></span></div>`;
