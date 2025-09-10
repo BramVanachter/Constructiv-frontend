@@ -202,6 +202,16 @@
       margin-top: 12px;
       cursor: pointer;
     }
+
+    .quizBtnGlobal {
+      display: block;
+      margin: 10px auto;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #a17be6;
+      background: #f4f1ff;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -216,6 +226,7 @@
   </video>
 
   <div id="chat"></div>
+  <button class="quizBtnGlobal" onclick="toonQuizUitPool()">🧠 Quiz</button>
 
   <div id="inputRow">
     <textarea id="userInput"></textarea>
@@ -229,41 +240,42 @@
     const API_URL = "https://constructiv-veiligheid.onrender.com";
 
     const taal = localStorage.getItem("taal") || "nl";
-    let videoNaam = localStorage.getItem("video");
+    const videoNaam = localStorage.getItem("video");
+
+    // mapping van thema
+    const topicMap = {
+      "Prefabtrap": "Hijsen van prefabtrap",
+      "HijsenVanWelfsels": "Hijsen van welfsels",
+      "Binnenslijpwerk": "Binnenslijpwerk",
+      "Buitenslijpwerk": "Buitenslijpwerk",
+      "Dakdichting": "Dakdichting"
+    };
+    const currentTopic = topicMap[videoNaam] || videoNaam;
 
     if (!videoNaam) {
       alert("Geen video geselecteerd. Ga terug naar de bibliotheek.");
       window.location.href = "bibliotheek.html";
     } else {
       const meertalig = ["Prefabtrap", "HijsenVanWelfsels"];
-      let src = "";
-
-      if (meertalig.includes(videoNaam)) {
-        src = "videos/" + videoNaam + "_" + taal + ".mp4";
-      } else {
-        src = "videos/" + videoNaam + ".mp4";
-      }
-
+      let src = meertalig.includes(videoNaam)
+        ? "videos/" + videoNaam + "_" + taal + ".mp4"
+        : "videos/" + videoNaam + ".mp4";
       document.getElementById("videoSource").src = src;
       document.getElementById("uitlegVideo").load();
     }
 
     const uiVertalingen = {
       nl: { placeholder: "Typ je vraag hier...", sendTitle: "Versturen", micTitle: "Spreken",
-            quizTitle: "Weet je dit nog?", quizBtn: "🧠 Test jezelf over dit onderwerp?",
-            correct: "✅ Juist!", wrong: "❌ Fout!", close: "✖ Sluiten",
+            quizTitle: "Weet je dit nog?", correct: "✅ Juist!", wrong: "❌ Fout!", close: "✖ Sluiten",
             welcome: "Hallo! 👋 Ik ben je virtuele assistent. Ik ben hier om te helpen." },
       en: { placeholder: "Type your question here...", sendTitle: "Send", micTitle: "Speak",
-            quizTitle: "Do you remember this?", quizBtn: "🧠 Test yourself on this topic?",
-            correct: "✅ Correct!", wrong: "❌ Wrong!", close: "✖ Close",
+            quizTitle: "Do you remember this?", correct: "✅ Correct!", wrong: "❌ Wrong!", close: "✖ Close",
             welcome: "Hello! 👋 I’m your virtual assistant. I’m here to help." },
       fr: { placeholder: "Tapez votre question ici...", sendTitle: "Envoyer", micTitle: "Parler",
-            quizTitle: "Tu t'en souviens ?", quizBtn: "🧠 Testez vos connaissances sur ce sujet ?",
-            correct: "✅ Correct !", wrong: "❌ Faux !", close: "✖ Fermer",
+            quizTitle: "Tu t'en souviens ?", correct: "✅ Correct !", wrong: "❌ Faux !", close: "✖ Fermer",
             welcome: "Bonjour ! 👋 Je suis votre assistant virtuel. Je suis là pour vous aider." },
       de: { placeholder: "Gib deine Frage hier ein...", sendTitle: "Senden", micTitle: "Sprechen",
-            quizTitle: "Erinnerst du dich?", quizBtn: "🧠 Teste dich zu diesem Thema?",
-            correct: "✅ Richtig!", wrong: "❌ Falsch!", close: "✖ Schließen",
+            quizTitle: "Erinnerst du dich?", correct: "✅ Richtig!", wrong: "❌ Falsch!", close: "✖ Schließen",
             welcome: "Hallo! 👋 Ich bin Ihr virtueller Assistent. Ich bin hier, um zu helfen." }
     };
     const uiText = uiVertalingen[taal] || uiVertalingen["nl"];
@@ -281,12 +293,15 @@
       chat.appendChild(startMsg);
     });
 
+    // Quizpool voor volledige sessie
+    const quizPool = [];
+
     async function apiVraag(tekst) {
       try {
         const response = await fetch(`${API_URL}/vraag_met_metadata`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tekst })
+          body: JSON.stringify({ tekst: `[THEMA: ${currentTopic}] ${tekst}`, topic: currentTopic })
         });
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
         return await response.json();
@@ -322,34 +337,61 @@
       }
 
       if (data.quiz) {
-        const quizBtn = document.createElement("button");
-        quizBtn.textContent = uiText.quizBtn;
-        quizBtn.className = "quizBtn chatbubble antwoord";
-        quizBtn.onclick = () => toonQuiz(data.quiz);
-        chat.appendChild(quizBtn);
-        chat.scrollTop = chat.scrollHeight;
+        quizPool.push(data.quiz);
       }
     }
 
-    function toonQuiz(quiz) {
+    function toonQuizUitPool() {
       const modal = document.getElementById("quizModal");
       const content = document.getElementById("quizContent");
 
-      let html = `<h3>${uiText.quizTitle}</h3><p>${quiz.vraag}</p>`;
-      quiz.opties.forEach(optie => { html += `<button class="quizOptie">${optie}</button>`; });
-      html += `<button class="sluitenBtn" onclick="sluitQuiz()">${uiText.close}</button>`;
-      content.innerHTML = html;
+      if (quizPool.length === 0) {
+        content.innerHTML = `<h3>${uiText.quizTitle}</h3><p>Geen quizvragen beschikbaar.</p>
+          <button class="sluitenBtn" onclick="sluitQuiz()">${uiText.close}</button>`;
+        modal.style.display = "flex";
+        return;
+      }
 
-      document.querySelectorAll(".quizOptie").forEach(btn => {
-        btn.addEventListener("click", () => controleerAntwoord(btn, btn.innerText, quiz.juist));
-      });
+      let idx = 0;
+      let score = 0;
 
+      function renderVraag() {
+        const q = quizPool[idx];
+        let html = `<h3>${uiText.quizTitle}</h3><p><b>Vraag ${idx+1}/${quizPool.length}</b></p>`;
+        html += `<p>${q.vraag}</p>`;
+        q.opties.forEach(opt => {
+          html += `<button class="quizOptie">${opt}</button>`;
+        });
+        html += `<button class="sluitenBtn" id="nextBtn">${idx+1 < quizPool.length ? "Volgende" : uiText.close}</button>`;
+        content.innerHTML = html;
+
+        content.querySelectorAll(".quizOptie").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if (btn.innerText === q.juist) {
+              btn.style.backgroundColor = "#c8f7c5";
+              btn.innerText += " " + uiText.correct;
+              score++;
+            } else {
+              btn.style.backgroundColor = "#f7c5c5";
+              btn.innerText += " " + uiText.wrong;
+            }
+            content.querySelectorAll(".quizOptie").forEach(b => b.disabled = true);
+          });
+        });
+
+        document.getElementById("nextBtn").onclick = () => {
+          if (idx+1 < quizPool.length) {
+            idx++;
+            renderVraag();
+          } else {
+            content.innerHTML = `<h3>${uiText.quizTitle}</h3><p>Klaar! Score: ${score}/${quizPool.length}</p>
+              <button class="sluitenBtn" onclick="sluitQuiz()">${uiText.close}</button>`;
+          }
+        };
+      }
+
+      renderVraag();
       modal.style.display = "flex";
-    }
-
-    function controleerAntwoord(btn, gekozen, juist) {
-      if (gekozen === juist) { btn.style.backgroundColor = "#c8f7c5"; btn.innerText += " " + uiText.correct; }
-      else { btn.style.backgroundColor = "#f7c5c5"; btn.innerText += " " + uiText.wrong; }
     }
 
     function sluitQuiz() { document.getElementById("quizModal").style.display = "none"; }
