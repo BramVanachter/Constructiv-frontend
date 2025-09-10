@@ -9,8 +9,6 @@
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
       background-image: url("images/Achtergrond 1.webp");
       background-size: cover;
       background-position: center;
@@ -29,8 +27,8 @@
     #terugIcoon:hover { transform: scale(1.1); }
 
     #logo {
-      position: absolute;
-      top: 50px;
+      position: fixed;
+      top: 20px;
       right: 20px;
       width: 220px;
       z-index: 10;
@@ -39,15 +37,44 @@
     h1 {
       text-align: center;
       color: #e4a312;
-      font-size: 36px;
-      margin: 20px 0 10px 0;
+      font-size: 32px;
+      margin: 20px 0;
     }
 
+    /* Layout: video links, chat rechts */
+    #mainLayout {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: stretch;
+      height: calc(100% - 80px); /* ruimte voor header */
+      padding: 20px;
+      box-sizing: border-box;
+      gap: 20px;
+    }
+
+    /* Video links */
+    #videoContainer {
+      flex: 0 0 45%;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
     #uitlegVideo {
-      display: block;
-      margin: 0 auto 10px;
       width: 100%;
-      max-width: 800px;
+      max-width: 100%;
+      border-radius: 12px;
+      border: 2px solid #5d0e46;
+      background: #000;
+    }
+
+    /* Chat rechts */
+    #chatContainer {
+      flex: 0 0 55%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      max-width: 600px;
     }
 
     #chat {
@@ -57,10 +84,7 @@
       background-color: #ffffff;
       border-radius: 12px;
       padding: 15px;
-      margin: 0 auto;
-      width: 100%;
-      max-width: 800px;
-      box-sizing: border-box;
+      margin-bottom: 10px;
     }
 
     .chatbubble {
@@ -121,6 +145,7 @@
       40% { opacity: 1; }
     }
 
+    /* Input onderaan chat */
     #inputRow {
       display: flex;
       align-items: flex-end;
@@ -129,10 +154,6 @@
       padding: 8px;
       background-color: white;
       gap: 8px;
-      width: 100%;
-      max-width: 800px;
-      margin: 10px auto 20px auto;
-      box-sizing: border-box;
     }
     #inputRow textarea {
       flex: 1;
@@ -202,80 +223,67 @@
       margin-top: 12px;
       cursor: pointer;
     }
-
-    .quizBtnGlobal {
-      display: block;
-      margin: 10px auto;
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: 1px solid #a17be6;
-      background: #f4f1ff;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
   <img src="Icons/back.png" id="terugIcoon" onclick="gaTerug()" alt="Terug" />
   <img src="images/logo.png" alt="Logo" id="logo" />
-
   <h1>SAFETY: GOOD PRACTICES</h1>
 
-  <video id="uitlegVideo" width="600" controls>
-    <source id="videoSource" src="" type="video/mp4">
-    Je browser ondersteunt geen video.
-  </video>
+  <div id="mainLayout">
+    <!-- Video links -->
+    <div id="videoContainer">
+      <video id="uitlegVideo" controls>
+        <source id="videoSource" src="" type="video/mp4">
+        Je browser ondersteunt geen video.
+      </video>
+    </div>
 
-  <div id="chat"></div>
-  <button class="quizBtnGlobal" onclick="toonQuizUitPool()">🧠 Quiz</button>
-
-  <div id="inputRow">
-    <textarea id="userInput"></textarea>
-    <button onclick="stelVraag()" id="sendButton"><img src="Icons/Send.jpg" /></button>
-    <button onclick="startListening()" id="micButton"><img src="Icons/Mic.jpg" /></button>
+    <!-- Chat rechts -->
+    <div id="chatContainer">
+      <div id="chat"></div>
+      <div id="inputRow">
+        <textarea id="userInput"></textarea>
+        <button onclick="stelVraag()" id="sendButton"><img src="Icons/Send.jpg" /></button>
+        <button onclick="startListening()" id="micButton"><img src="Icons/Mic.jpg" /></button>
+      </div>
+    </div>
   </div>
 
   <div id="quizModal"><div id="quizContent"></div></div>
 
   <script>
     const API_URL = "https://constructiv-veiligheid.onrender.com";
-
     const taal = localStorage.getItem("taal") || "nl";
-    const videoNaam = localStorage.getItem("video");
-
-    // mapping van thema
-    const topicMap = {
-      "Prefabtrap": "Hijsen van prefabtrap",
-      "HijsenVanWelfsels": "Hijsen van welfsels",
-      "Binnenslijpwerk": "Binnenslijpwerk",
-      "Buitenslijpwerk": "Buitenslijpwerk",
-      "Dakdichting": "Dakdichting"
-    };
-    const currentTopic = topicMap[videoNaam] || videoNaam;
+    let videoNaam = localStorage.getItem("video");
 
     if (!videoNaam) {
       alert("Geen video geselecteerd. Ga terug naar de bibliotheek.");
       window.location.href = "bibliotheek.html";
     } else {
       const meertalig = ["Prefabtrap", "HijsenVanWelfsels"];
-      let src = meertalig.includes(videoNaam)
-        ? "videos/" + videoNaam + "_" + taal + ".mp4"
-        : "videos/" + videoNaam + ".mp4";
+      let src = meertalig.includes(videoNaam) ?
+        `videos/${videoNaam}_${taal}.mp4` : `videos/${videoNaam}.mp4`;
       document.getElementById("videoSource").src = src;
       document.getElementById("uitlegVideo").load();
     }
 
     const uiVertalingen = {
       nl: { placeholder: "Typ je vraag hier...", sendTitle: "Versturen", micTitle: "Spreken",
-            quizTitle: "Weet je dit nog?", correct: "✅ Juist!", wrong: "❌ Fout!", close: "✖ Sluiten",
+            quizTitle: "Weet je dit nog?", quizBtn: "🧠 Test jezelf?", correct: "✅ Juist!",
+            wrong: "❌ Fout!", close: "✖ Sluiten",
             welcome: "Hallo! 👋 Ik ben je virtuele assistent. Ik ben hier om te helpen." },
       en: { placeholder: "Type your question here...", sendTitle: "Send", micTitle: "Speak",
-            quizTitle: "Do you remember this?", correct: "✅ Correct!", wrong: "❌ Wrong!", close: "✖ Close",
+            quizTitle: "Do you remember this?", quizBtn: "🧠 Test yourself?", correct: "✅ Correct!",
+            wrong: "❌ Wrong!", close: "✖ Close",
             welcome: "Hello! 👋 I’m your virtual assistant. I’m here to help." },
       fr: { placeholder: "Tapez votre question ici...", sendTitle: "Envoyer", micTitle: "Parler",
-            quizTitle: "Tu t'en souviens ?", correct: "✅ Correct !", wrong: "❌ Faux !", close: "✖ Fermer",
+            quizTitle: "Tu t'en souviens ?", quizBtn: "🧠 Testez-vous ?", correct: "✅ Correct !",
+            wrong: "❌ Faux !", close: "✖ Fermer",
             welcome: "Bonjour ! 👋 Je suis votre assistant virtuel. Je suis là pour vous aider." },
       de: { placeholder: "Gib deine Frage hier ein...", sendTitle: "Senden", micTitle: "Sprechen",
-            quizTitle: "Erinnerst du dich?", correct: "✅ Richtig!", wrong: "❌ Falsch!", close: "✖ Schließen",
+            quizTitle: "Erinnerst du dich?", quizBtn: "🧠 Teste dich?", correct: "✅ Richtig!",
+            wrong: "❌ Falsch!", close: "✖ Schließen",
             welcome: "Hallo! 👋 Ich bin Ihr virtueller Assistent. Ich bin hier, um zu helfen." }
     };
     const uiText = uiVertalingen[taal] || uiVertalingen["nl"];
@@ -293,15 +301,12 @@
       chat.appendChild(startMsg);
     });
 
-    // Quizpool voor volledige sessie
-    const quizPool = [];
-
     async function apiVraag(tekst) {
       try {
         const response = await fetch(`${API_URL}/vraag_met_metadata`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tekst: `[THEMA: ${currentTopic}] ${tekst}`, topic: currentTopic })
+          body: JSON.stringify({ tekst })
         });
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
         return await response.json();
@@ -337,61 +342,32 @@
       }
 
       if (data.quiz) {
-        quizPool.push(data.quiz);
+        const quizBtn = document.createElement("button");
+        quizBtn.textContent = uiText.quizBtn;
+        quizBtn.className = "quizBtn chatbubble antwoord";
+        quizBtn.onclick = () => toonQuiz(data.quiz);
+        chat.appendChild(quizBtn);
+        chat.scrollTop = chat.scrollHeight;
       }
     }
 
-    function toonQuizUitPool() {
+    function toonQuiz(quiz) {
       const modal = document.getElementById("quizModal");
       const content = document.getElementById("quizContent");
+      let html = `<h3>${uiText.quizTitle}</h3><p>${quiz.vraag}</p>`;
+      quiz.opties.forEach(optie => { html += `<button class="quizOptie">${optie}</button>`; });
+      html += `<button class="sluitenBtn" onclick="sluitQuiz()">${uiText.close}</button>`;
+      content.innerHTML = html;
 
-      if (quizPool.length === 0) {
-        content.innerHTML = `<h3>${uiText.quizTitle}</h3><p>Geen quizvragen beschikbaar.</p>
-          <button class="sluitenBtn" onclick="sluitQuiz()">${uiText.close}</button>`;
-        modal.style.display = "flex";
-        return;
-      }
-
-      let idx = 0;
-      let score = 0;
-
-      function renderVraag() {
-        const q = quizPool[idx];
-        let html = `<h3>${uiText.quizTitle}</h3><p><b>Vraag ${idx+1}/${quizPool.length}</b></p>`;
-        html += `<p>${q.vraag}</p>`;
-        q.opties.forEach(opt => {
-          html += `<button class="quizOptie">${opt}</button>`;
-        });
-        html += `<button class="sluitenBtn" id="nextBtn">${idx+1 < quizPool.length ? "Volgende" : uiText.close}</button>`;
-        content.innerHTML = html;
-
-        content.querySelectorAll(".quizOptie").forEach(btn => {
-          btn.addEventListener("click", () => {
-            if (btn.innerText === q.juist) {
-              btn.style.backgroundColor = "#c8f7c5";
-              btn.innerText += " " + uiText.correct;
-              score++;
-            } else {
-              btn.style.backgroundColor = "#f7c5c5";
-              btn.innerText += " " + uiText.wrong;
-            }
-            content.querySelectorAll(".quizOptie").forEach(b => b.disabled = true);
-          });
-        });
-
-        document.getElementById("nextBtn").onclick = () => {
-          if (idx+1 < quizPool.length) {
-            idx++;
-            renderVraag();
-          } else {
-            content.innerHTML = `<h3>${uiText.quizTitle}</h3><p>Klaar! Score: ${score}/${quizPool.length}</p>
-              <button class="sluitenBtn" onclick="sluitQuiz()">${uiText.close}</button>`;
-          }
-        };
-      }
-
-      renderVraag();
+      document.querySelectorAll(".quizOptie").forEach(btn => {
+        btn.addEventListener("click", () => controleerAntwoord(btn, btn.innerText, quiz.juist));
+      });
       modal.style.display = "flex";
+    }
+
+    function controleerAntwoord(btn, gekozen, juist) {
+      if (gekozen === juist) { btn.style.backgroundColor = "#c8f7c5"; btn.innerText += " " + uiText.correct; }
+      else { btn.style.backgroundColor = "#f7c5c5"; btn.innerText += " " + uiText.wrong; }
     }
 
     function sluitQuiz() { document.getElementById("quizModal").style.display = "none"; }
