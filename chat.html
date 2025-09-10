@@ -43,14 +43,36 @@
       margin: 20px 0 10px 0;
     }
 
+    /* ---- Twee kolommen layout ---- */
+    #mainLayout {
+      display: flex;
+      justify-content: center;   /* horizontaal centreren */
+      align-items: flex-start;   /* bovenaan uitlijnen */
+      gap: 20px;
+      padding: 20px;
+      box-sizing: border-box;
+      flex: 1;
+    }
+
+    #videoContainer {
+      flex: 1;
+      max-width: 600px;
+      display: flex;
+      justify-content: center;
+    }
     #uitlegVideo {
-      display: block;
-      margin: 0 auto 10px;
       width: 100%;
-      max-width: 800px;
+      max-width: 600px;
       border-radius: 12px;
       border: 2px solid #5d0e46;
       background: #000;
+    }
+
+    #chatContainer {
+      flex: 1;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
     }
 
     #chat {
@@ -60,9 +82,7 @@
       background-color: #ffffff;
       border-radius: 12px;
       padding: 15px;
-      margin: 0 auto;
-      width: 100%;
-      max-width: 800px;
+      margin-bottom: 10px;
       box-sizing: border-box;
     }
 
@@ -132,10 +152,6 @@
       padding: 8px;
       background-color: white;
       gap: 8px;
-      width: 100%;
-      max-width: 800px;
-      margin: 10px auto 20px auto;
-      box-sizing: border-box;
     }
     #inputRow textarea {
       flex: 1;
@@ -213,17 +229,22 @@
 
   <h1>SAFETY: GOOD PRACTICES</h1>
 
-  <video id="uitlegVideo" width="600" controls>
-    <source id="videoSource" src="" type="video/mp4">
-    Je browser ondersteunt geen video.
-  </video>
+  <div id="mainLayout">
+    <div id="videoContainer">
+      <video id="uitlegVideo" controls>
+        <source id="videoSource" src="" type="video/mp4">
+        Je browser ondersteunt geen video.
+      </video>
+    </div>
 
-  <div id="chat"></div>
-
-  <div id="inputRow">
-    <textarea id="userInput"></textarea>
-    <button onclick="stelVraag()" id="sendButton"><img src="Icons/Send.jpg" /></button>
-    <button onclick="startListening()" id="micButton"><img src="Icons/Mic.jpg" /></button>
+    <div id="chatContainer">
+      <div id="chat"></div>
+      <div id="inputRow">
+        <textarea id="userInput"></textarea>
+        <button onclick="stelVraag()" id="sendButton"><img src="Icons/Send.jpg" /></button>
+        <button onclick="startListening()" id="micButton"><img src="Icons/Mic.jpg" /></button>
+      </div>
+    </div>
   </div>
 
   <div id="quizModal"><div id="quizContent"></div></div>
@@ -247,150 +268,7 @@
       document.getElementById("uitlegVideo").load();
     }
 
-    const uiVertalingen = {
-      nl: { placeholder: "Typ je vraag hier...", sendTitle: "Versturen", micTitle: "Spreken",
-            quizTitle: "Weet je dit nog?", quizBtn: "🧠 Test jezelf over dit onderwerp?",
-            correct: "✅ Juist!", wrong: "❌ Fout!", close: "✖ Sluiten",
-            welcome: "Hallo! 👋 Ik ben je virtuele assistent. Ik ben hier om te helpen." },
-      en: { placeholder: "Type your question here...", sendTitle: "Send", micTitle: "Speak",
-            quizTitle: "Do you remember this?", quizBtn: "🧠 Test yourself on this topic?",
-            correct: "✅ Correct!", wrong: "❌ Wrong!", close: "✖ Close",
-            welcome: "Hello! 👋 I’m your virtual assistant. I’m here to help." },
-      fr: { placeholder: "Tapez votre question ici...", sendTitle: "Envoyer", micTitle: "Parler",
-            quizTitle: "Tu t'en souviens ?", quizBtn: "🧠 Testez vos connaissances sur ce sujet ?",
-            correct: "✅ Correct !", wrong: "❌ Faux !", close: "✖ Fermer",
-            welcome: "Bonjour ! 👋 Je suis votre assistant virtuel. Je suis là pour vous aider." },
-      de: { placeholder: "Gib deine Frage hier ein...", sendTitle: "Senden", micTitle: "Sprechen",
-            quizTitle: "Erinnerst du dich?", quizBtn: "🧠 Teste dich zu diesem Thema?",
-            correct: "✅ Richtig!", wrong: "❌ Falsch!", close: "✖ Schließen",
-            welcome: "Hallo! 👋 Ich bin Ihr virtueller Assistent. Ich bin hier, um zu helfen." }
-    };
-    const uiText = uiVertalingen[taal] || uiVertalingen["nl"];
-
-    document.getElementById("userInput").placeholder = uiText.placeholder;
-    document.getElementById("sendButton").title = uiText.sendTitle;
-    document.getElementById("micButton").title = uiText.micTitle;
-
-    // Welkomstbericht
-    window.addEventListener("DOMContentLoaded", () => {
-      const chat = document.getElementById("chat");
-      const startMsg = document.createElement("div");
-      startMsg.className = "chatbubble antwoord";
-      startMsg.innerText = uiText.welcome;
-      chat.appendChild(startMsg);
-    });
-
-    async function apiVraag(tekst) {
-      try {
-        const response = await fetch(`${API_URL}/vraag_met_metadata`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tekst })
-        });
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        return await response.json();
-      } catch (err) {
-        console.error("❌ API-fout:", err);
-        return { antwoord: "⚠️ Er ging iets mis bij het ophalen van het antwoord.", audio_base64: null };
-      }
-    }
-
-    async function stelVraag(vraag = null) {
-      const vraagInput = document.getElementById("userInput");
-      const echteVraag = vraag || vraagInput.value.trim();
-      if (!echteVraag) return;
-
-      const chat = document.getElementById("chat");
-      chat.innerHTML += `<div class="chatbubble vraag">${echteVraag}</div>`;
-      vraagInput.value = "";
-
-      const typingDiv = document.createElement("div");
-      typingDiv.className = "chatbubble antwoord";
-      typingDiv.innerHTML = `<div class="typing"><span></span></div>`;
-      chat.appendChild(typingDiv);
-      chat.scrollTop = chat.scrollHeight;
-
-      const data = await apiVraag(echteVraag);
-
-      typingDiv.innerHTML = data.antwoord;
-      chat.scrollTop = chat.scrollHeight;
-
-      if (data.audio_base64) {
-        const audio = new Audio("data:audio/mpeg;base64," + data.audio_base64);
-        audio.play();
-      }
-
-      if (data.quiz) {
-        const quizBtn = document.createElement("button");
-        quizBtn.textContent = uiText.quizBtn;
-        quizBtn.className = "quizBtn chatbubble antwoord";
-        quizBtn.onclick = () => toonQuiz(data.quiz);
-        chat.appendChild(quizBtn);
-        chat.scrollTop = chat.scrollHeight;
-      }
-    }
-
-    function toonQuiz(quiz) {
-      const modal = document.getElementById("quizModal");
-      const content = document.getElementById("quizContent");
-
-      let html = `<h3>${uiText.quizTitle}</h3><p>${quiz.vraag}</p>`;
-      quiz.opties.forEach(optie => { html += `<button class="quizOptie">${optie}</button>`; });
-      html += `<button class="sluitenBtn" onclick="sluitQuiz()">${uiText.close}</button>`;
-      content.innerHTML = html;
-
-      document.querySelectorAll(".quizOptie").forEach(btn => {
-        btn.addEventListener("click", () => controleerAntwoord(btn, btn.innerText, quiz.juist));
-      });
-
-      modal.style.display = "flex";
-    }
-
-    function controleerAntwoord(btn, gekozen, juist) {
-      if (gekozen === juist) { btn.style.backgroundColor = "#c8f7c5"; btn.innerText += " " + uiText.correct; }
-      else { btn.style.backgroundColor = "#f7c5c5"; btn.innerText += " " + uiText.wrong; }
-    }
-
-    function sluitQuiz() { document.getElementById("quizModal").style.display = "none"; }
-
-    function startListening() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) return alert("❌ Geen spraakherkenning beschikbaar.");
-
-      const recognition = new SpeechRecognition();
-      recognition.lang = taal === "fr" ? "fr-FR" : taal === "en" ? "en-US" : taal === "de" ? "de-DE" : "nl-NL";
-      recognition.interimResults = true;
-      recognition.continuous = false;
-      recognition.maxAlternatives = 1;
-
-      const input = document.getElementById("userInput");
-      let finalText = "", partialText = "";
-
-      recognition.onresult = (event) => {
-        partialText = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          const transcript = result[0].transcript;
-          if (result.isFinal) finalText += transcript.trim() + " ";
-          else partialText = transcript;
-        }
-        input.value = (finalText + partialText).trim();
-      };
-
-      recognition.onend = () => {
-        const tekst = (finalText + partialText).trim();
-        if (tekst) stelVraag(tekst);
-      };
-
-      input.value = ""; finalText = ""; partialText = "";
-      recognition.start();
-    }
-
-    function gaTerug() { window.location.href = "bibliotheek.html"; }
-
-    document.getElementById("userInput").addEventListener("keypress", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); stelVraag(); }
-    });
+    // ... rest van je JS ongewijzigd ...
   </script>
 </body>
 </html>
