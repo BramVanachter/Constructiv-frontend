@@ -35,13 +35,8 @@
       transition: width 0.3s ease;
     }
 
-    /* ✅ Logo kleiner maken op kleinere schermen */
-    @media (max-width: 1200px) {
-      #logo { width: 160px; }
-    }
-    @media (max-width: 800px) {
-      #logo { width: 120px; }
-    }
+    @media (max-width: 1200px) { #logo { width: 160px; } }
+    @media (max-width: 800px) { #logo { width: 120px; } }
 
     h1 {
       text-align: center;
@@ -50,25 +45,25 @@
       margin: 20px 0;
     }
 
-    /* Layout: video links, chat rechts */
+    /* Layout */
     #mainLayout {
       display: flex;
       flex-direction: row;
       justify-content: center;
-      align-items: center; 
+      align-items: flex-start;
       height: calc(100% - 120px);
-      padding: 20px 40px;
+      padding: 20px;
       box-sizing: border-box;
-      gap: 2px; /* meer ruimte */
+      gap: 10px; /* kleine gap */
     }
 
     /* Video links */
-#videoContainer {
-  flex: 0 0 45%;
-  display: flex;
-  justify-content: flex-end; /* duw video helemaal naar rechts */
-  align-items: center;
-}
+    #videoContainer {
+      flex: 1; /* laat hem vullen */
+      display: flex;
+      justify-content: flex-end; 
+      align-items: center;
+    }
     #uitlegVideo {
       width: 100%;
       max-width: 600px;
@@ -77,15 +72,13 @@
       background: #000;
     }
 
-    /* Chat rechts (meer naar midden) */
+    /* Chat rechts */
     #chatContainer {
-      flex: 0 0 55%;   /* iets breder */
+      flex: 1; /* zelfde ruimte als video */
       display: flex;
       flex-direction: column;
       justify-content: center;
       max-width: 600px;
-      margin-left: auto;  /* 🔥 zorgt dat chat meer naar links schuift */
-      margin-right: auto; /* 🔥 houdt hem netjes gecentreerd */
       height: 100%;
     }
 
@@ -111,53 +104,10 @@
       font-size: 15px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    .vraag {
-      background-color: #5d0e46;
-      color: #fff;
-      float: right;
-      border-top-right-radius: 4px;
-    }
-    .antwoord {
-      background-color: #fff;
-      border: 1px solid #5d0e46;
-      color: #333;
-      float: left;
-      border-top-left-radius: 4px;
-    }
+    .vraag { background-color: #5d0e46; color: #fff; float: right; border-top-right-radius: 4px; }
+    .antwoord { background-color: #fff; border: 1px solid #5d0e46; color: #333; float: left; border-top-left-radius: 4px; }
 
-    /* Typing animatie */
-    .typing {
-      background-color: #fff;
-      border: 1px solid #5d0e46;
-      border-radius: 12px;
-      padding: 6px 12px;
-      margin: 10px 0;
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 24px;
-    }
-    .typing::before, .typing::after, .typing span {
-      content: '';
-      display: block;
-      width: 8px;
-      height: 8px;
-      background: #5d0e46;
-      border-radius: 50%;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    .typing::before { left: 12px; animation: typingBlink 1.2s infinite; }
-    .typing::after  { left: 32px; animation: typingBlink 1.2s infinite 0.3s; }
-    .typing span    { left: 52px; animation: typingBlink 1.2s infinite 0.6s; }
-
-    @keyframes typingBlink {
-      0%, 80%, 100% { opacity: 0.2; }
-      40% { opacity: 1; }
-    }
-
-    /* Input onderaan chat */
+    /* Input */
     #inputRow {
       display: flex;
       align-items: flex-end;
@@ -187,54 +137,6 @@
       cursor: pointer;
     }
     #inputRow button img { width: 28px; height: auto; display: block; }
-
-    /* Quiz Popup */
-    #quizModal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-    }
-    #quizContent {
-      background: #fff;
-      border: 2px solid #5d0e46;
-      border-radius: 16px;
-      padding: 25px;
-      max-width: 420px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-    #quizContent h3 {
-      font-size: 20px;
-      margin-bottom: 20px;
-      color: #5d0e46;
-    }
-    #quizContent button {
-      background-color: #f4f1ff;
-      border: 1px solid #a17be6;
-      color: #333;
-      border-radius: 10px;
-      padding: 10px 18px;
-      margin: 8px 0;
-      font-size: 15px;
-      width: 100%;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-    #quizContent button:hover { background-color: #e6d8ff; }
-    #quizContent .sluitenBtn {
-      background-color: #fff;
-      border: none;
-      color: #a17be6;
-      font-weight: bold;
-      margin-top: 12px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
@@ -243,7 +145,6 @@
   <h1>SAFETY: GOOD PRACTICES</h1>
 
   <div id="mainLayout">
-    <!-- Video links -->
     <div id="videoContainer">
       <video id="uitlegVideo" controls>
         <source id="videoSource" src="" type="video/mp4">
@@ -251,7 +152,6 @@
       </video>
     </div>
 
-    <!-- Chat rechts -->
     <div id="chatContainer">
       <div id="chat"></div>
       <div id="inputRow">
@@ -261,8 +161,6 @@
       </div>
     </div>
   </div>
-
-  <div id="quizModal"><div id="quizContent"></div></div>
 
   <script>
     const API_URL = "https://constructiv-veiligheid.onrender.com";
