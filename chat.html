@@ -44,17 +44,18 @@
     }
 
     /* ---- Twee kolommen layout ---- */
-    #mainLayout {
-      display: flex;
-      justify-content: center;
-      align-items: stretch;
-      gap: 30px;
-      padding: 20px 60px; /* extra witruimte links/rechts */
-      max-width: 1400px;   /* maximale breedte */
-      margin: 0 auto;      /* centreren */
-      flex: 1;
-      box-sizing: border-box;
-    }
+#mainLayout {
+  display: flex;
+  justify-content: flex-end;   /* alles meer naar rechts duwen */
+  align-items: stretch;
+  gap: 30px;
+  padding: 20px 40px 20px 120px; /* links meer marge dan rechts */
+  max-width: 1400px;
+  margin: 0 auto;
+  flex: 1;
+  box-sizing: border-box;
+}
+
 
     #chatContainer {
       flex: 0.25; /* ~25% */
