@@ -46,12 +46,13 @@
     /* ---- Twee kolommen layout ---- */
 #mainLayout {
   display: flex;
-  justify-content: flex-start; /* niet centreren */
+  justify-content: flex-end;   /* alles tegen de rechterkant duwen */
   align-items: stretch;
   gap: 30px;
-  padding: 20px 40px 20px 60px;
+  padding: 20px 40px;
   max-width: 1400px;
-  margin-left: 10%;  /* 10% naar rechts */
+  margin-left: auto;   /* duwt naar rechts */
+  margin-right: 8%;    /* beetje lucht rechts (pas dit aan: bv. 5–10%) */
   flex: 1;
   box-sizing: border-box;
 }
