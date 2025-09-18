@@ -253,9 +253,10 @@
 
     async function apiVraag(tekst) {
       try {
-        const response = await fetch(`${API_URL}/vraag_met_metadata?tekst=${encodeURIComponent(tekst)}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" }
+        const response = await fetch(`${API_URL}/vraag_met_metadata`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tekst: tekst, vraag: tekst })
         });
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
         return await response.json();
