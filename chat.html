@@ -251,16 +251,23 @@
       chat.appendChild(startMsg);
     });
 
+    // Debug-versie API call
     async function apiVraag(tekst) {
       try {
         const response = await fetch(`${API_URL}/vraag_met_metadata`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          // stuur beide keys mee voor zekerheid
           body: JSON.stringify({ vraag: tekst, tekst: tekst })
         });
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        return await response.json();
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          console.error("❌ Server error:", response.status, data);
+          return { antwoord: `⚠️ Server error ${response.status}`, audio_base64: null };
+        }
+
+        return data;
       } catch (err) {
         console.error("❌ API-fout:", err);
         return { antwoord: "⚠️ Er ging iets mis bij het ophalen van het antwoord.", audio_base64: null };
