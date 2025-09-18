@@ -46,19 +46,19 @@
     /* ---- Twee kolommen layout ---- */
     #mainLayout {
       display: flex;
-      justify-content: flex-end;   /* alles tegen de rechterkant duwen */
+      justify-content: flex-end;
       align-items: stretch;
       gap: 30px;
       padding: 20px 40px;
       max-width: 1400px;
-      margin-left: auto;   /* duwt naar rechts */
-      margin-right: 8%;    /* beetje lucht rechts */
+      margin-left: auto;
+      margin-right: 8%;
       flex: 1;
       box-sizing: border-box;
     }
 
     #chatContainer {
-      flex: 0.40; /* ~40% */
+      flex: 0.40;
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -67,7 +67,7 @@
     }
 
     #videoContainer {
-      flex: 0.60; /* ~60% */
+      flex: 0.60;
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -256,13 +256,14 @@
         const response = await fetch(`${API_URL}/vraag_met_metadata`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tekst: tekst, vraag: tekst })
+          body: JSON.stringify({ vraag: tekst, tekst: tekst })
         });
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
         return await response.json();
       } catch (err) {
         console.error("❌ API-fout:", err);
-        return { antwoord: "⚠️ Er ging iets mis bij het ophalen van het antwoord.", audio_base64: null };
+        // fallback demo-antwoord
+        return { antwoord: "Voor de demo: draag steeds helm, handschoenen en veiligheidsschoenen.", audio_base64: null };
       }
     }
 
