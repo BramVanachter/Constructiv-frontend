@@ -46,19 +46,19 @@
     /* ---- Twee kolommen layout ---- */
     #mainLayout {
       display: flex;
-      justify-content: flex-end;
+      justify-content: flex-end;   /* alles tegen de rechterkant duwen */
       align-items: stretch;
       gap: 30px;
       padding: 20px 40px;
       max-width: 1400px;
-      margin-left: auto;
-      margin-right: 8%;
+      margin-left: auto;   /* duwt naar rechts */
+      margin-right: 8%;    /* beetje lucht rechts */
       flex: 1;
       box-sizing: border-box;
     }
 
     #chatContainer {
-      flex: 0.40;
+      flex: 0.40; /* ~40% */
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -67,7 +67,7 @@
     }
 
     #videoContainer {
-      flex: 0.60;
+      flex: 0.60; /* ~60% */
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -103,8 +103,19 @@
       font-size: 15px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    .vraag { background-color: #5d0e46; color: #fff; float: right; border-top-right-radius: 4px; }
-    .antwoord { background-color: #fff; border: 1px solid #5d0e46; color: #333; float: left; border-top-left-radius: 4px; }
+    .vraag {
+      background-color: #5d0e46;
+      color: #fff;
+      float: right;
+      border-top-right-radius: 4px;
+    }
+    .antwoord {
+      background-color: #fff;
+      border: 1px solid #5d0e46;
+      color: #333;
+      float: left;
+      border-top-left-radius: 4px;
+    }
 
     #inputRow {
       display: flex;
@@ -157,7 +168,11 @@
       text-align: center;
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-    #quizContent h3 { font-size: 20px; margin-bottom: 20px; color: #5d0e46; }
+    #quizContent h3 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #5d0e46;
+    }
     #quizContent button {
       background-color: #f4f1ff;
       border: 1px solid #a17be6;
@@ -241,13 +256,14 @@
         const response = await fetch(`${API_URL}/vraag_met_metadata`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ vraag: tekst }) // ← oude werkende payload
+          // stuur beide keys mee voor zekerheid
+          body: JSON.stringify({ vraag: tekst, tekst: tekst })
         });
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
         return await response.json();
       } catch (err) {
         console.error("❌ API-fout:", err);
-        return { antwoord: "Voor de demo: draag steeds helm, handschoenen en veiligheidsschoenen.", audio_base64: null };
+        return { antwoord: "⚠️ Er ging iets mis bij het ophalen van het antwoord.", audio_base64: null };
       }
     }
 
@@ -317,7 +333,7 @@
       recognition.lang = taal === "fr" ? "fr-FR" : taal === "en" ? "en-US" : taal === "de" ? "de-DE" : "nl-NL";
       recognition.interimResults = true;
       recognition.continuous = false;
-      recognition.maxAlternatives = 1 relaxing;
+      recognition.maxAlternatives = 1;
 
       const input = document.getElementById("userInput");
       let finalText = "", partialText = "";
